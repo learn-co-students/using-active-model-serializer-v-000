@@ -1,2 +1,7 @@
-<%= @author.name %>
-<%= @author.hometown %>
+<h1><%= @author.name %></h1>
+<h3><%= @author.hometown %></h3>
+<ul>
+  <% @author.posts.each do |post| %>
+    <li><%= post.title %></li><br><br>
+  <% end %>
+</ul>
