@@ -3,21 +3,28 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.all
+    # respond_to do |format|
+    #   format.html { render :index }
+    #   format.json { render json: @posts }
+    # end
   end
 
   def show
     @post = Post.find(params[:id])
     respond_to do |format|
       format.html { render :show }
-      format.json { render json: @post.to_json(only: [:title, :description, :id],
-                              include: [author: { only: [:name]}]) }
+      format.json { render json: @post }
+      
+      # handled by PostSerializer now...
+      # format.json { render json: @post.to_json(only: [:title, :description, :id],
+      #                         include: [author: { only: [:name]}]) }
     end
   end
 
-  def new
-    @post = Post.new
+  def new 
+    @post = Post.new 
   end
-
+  
   def create
     @post = Post.create(post_params)
     @post.save
