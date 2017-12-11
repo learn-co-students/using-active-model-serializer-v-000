@@ -2,9 +2,9 @@
 
 ## Objectives
 
-  1. Explain what ActiveModel::Serializer does.
+  1. Explain what ActiveModel::Serializer does
   2. Use ActiveModel::Serializer to render JSON with associated objects
-  3. Explain how ActiveModel::Serializer fits into Rails 5.
+  3. Explain how ActiveModel::Serializer fits into Rails 5
 
 ## Lesson
 
