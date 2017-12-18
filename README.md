@@ -7,7 +7,7 @@
   3. Explain how ActiveModel::Serializer fits into Rails 5.
 
 ## Lesson
-
+s
 In the last iteration of our blog application, we saw that using
 `to_json` was an easy way to serialize objects to JSON without having to
 create our own serializer. However, if we look at our current controller
