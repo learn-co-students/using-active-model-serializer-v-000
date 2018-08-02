@@ -1,6 +1,6 @@
-<a href="#" class="js-next" data-id="<%=@post.id%>">Next...</a>
 <h1 class="postTitle"><%= @post.title %></h1>
 <p class="postDescription"><%= @post.description %></p>
+<a href="#" class="js-next" data-id="<%=@post.id%>">Next...</a>
 
 <script type="text/javascript" charset="utf-8">
 $(function () {
@@ -8,8 +8,8 @@ $(function () {
     var nextId = parseInt($(".js-next").attr("data-id")) + 1;
     $.get("/posts/" + nextId + ".json", function(data) {
       var post = data;
-      $(".postTitle").text(post["title"]);
-      $(".postDescription").text(post["description"]);
+      $("#postTitle").text(post["title"]);
+      $("#postDescription").text(post["description"]);
       // re-set the id to current on the link
       $(".js-next").attr("data-id", post["id"]);
     });
