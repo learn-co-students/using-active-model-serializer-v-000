@@ -25,12 +25,13 @@ class PostsController < ApplicationController
 
   def create
     @post = Post.create(post_params)
-    @post.save
+
     render json: @post, status: 201
   end
 
   def edit
       @post = Post.find(params[:id])
+      render json: @post, status: 200
   end
 
   def update
