@@ -8,11 +8,10 @@ class PostsController < ApplicationController
 
   def show
     @post = Post.find(params[:id])
-      #BEFORE using a serializer:
-      render json: @post.to_json(only: [:title, :description, :id],
-                                include: [author: { only: [:name]}])
-       # AFTER USING OUR SERIALIZER
-      # render json: @post, status: 200
+    respond_to do |format|
+      format.html { render :show }
+      format.json { render json: @post} #calling render json implicity uses new ActiveModel::Serializer
+    end
   end
 
   def new
