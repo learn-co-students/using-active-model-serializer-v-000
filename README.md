@@ -1,285 +1,100 @@
-# Using ActiveModel::Serializer
+# Using to_json
 
 ## Objectives
 
-1.  Explain what ActiveModel::Serializer does.
-2.  Use ActiveModel::Serializer to render JSON with associated objects
-3.  Explain how ActiveModel::Serializer fits into Rails 5.
+1. Use the `to_json` method to render an object as JSON.
+2. Explain how to render different formats from the same controller action.
 
 ## Lesson
 
-Imagine we had a blog application. When we want to view an instance of a `Post`,
-we also want to view the `Author` associated with that `Post`. We could manually
-nest the data by using the built in ActiveRecord method `to_json` to serialize
-this data in a way that makes sense. Take a look at the current implementation
-of that:
+Last time out we created a `PostSerializer` and used it to serialize a `Post` to JSON.
+
+It worked great, but doing all that string concatenation and keeping track of the different quotes was kind of a nightmare. Imagine having to write serializers by hand for objects with more than four fields!
+
+![nanny shocked](http://i.giphy.com/LJPfWhMCs9Rks.gif)
+
+This is something people do every day in Rails, so there has to be a better way, right?
+
+### to_json
+
+Of course there is. Rails provides the `to_json` method which will take our object and, well, convert it to JSON. Let's see it in action. In our controller, let's swap our call to the `PostSerializer` for a `to_json`.
 
 ```ruby
 # posts_controller.rb
 # ...
-  def show
-    @post = Post.find(params[:id])
-    render json: @post.to_json(only: [:title, :description, :id],
-                              include: [author: { only: [:name]}])
-
+  def post_data
+    post = Post.find(params[:id])
+    render json: post.to_json
   end
 ```
 
-It's clear that even a little bit of customizing the output of `to_json` can get
-ugly real quick. Imagine if the post had `comments` and comments had `users` and
-pretty soon we're getting real deep in the weeds trying to keep track of all the
-`include`s and `only`s in a single line of `to_json`.
+Okay, well, surely it can't be that simple. Let's load up our Rails server and browse to `/posts`. Click one of the "More" buttons, and, just like that, it updates the post body. We didn't have to change a thing. Think of it as a testament to how great a job we did writing our own serializer.
 
-Or imagine using `to_json` to render
-something like this venue response from the Foursquare API:
+#### Including Associations
 
-```javascript
-{
-  meta: {
-    code: 200
-    requestId: "56cb5db4498e20e3892dd035"
-  }
-  notifications: [
-    {
-      type: "notificationTray"
-      item: {
-        unreadCount: 41
-      }
-    }
-  ]
-  response: {
-    venue: {
-      id: "40a55d80f964a52020f31ee3"
-      name: "Clinton St. Baking Co. & Restaurant"
-      contact: {
-        phone: "6466026263"
-        formattedPhone: "(646) 602-6263"
-      }
-      location: {
-        address: "4 Clinton St"
-        crossStreet: "at E Houston St"
-        lat: 40.72107924768216
-        lng: -73.98394256830215
-        postalCode: "10002"
-        cc: "US"
-        city: "New York"
-        state: "NY"
-        country: "United States"
-        formattedAddress: [
-          "4 Clinton St (at E Houston St)"
-          "New York, NY 10002"
-        ]
-      }
-    canonicalUrl: "https://foursquare.com/v/clinton-st-baking-co--restaurant/40a55d80f964a52020f31ee3"
-    categories: [
-    {
-      id: "4bf58dd8d48988d16a941735"
-      name: "Bakery"
-      pluralName: "Bakeries"
-      shortName: "Bakery"
-      icon: {
-        prefix: "https://ss3.4sqi.net/img/categories_v2/food/bakery_"
-        suffix: ".png"
-      }
-      primary: true
-    }
-    {
-      id: "4bf58dd8d48988d143941735"
-      name: "Breakfast Spot"
-      pluralName: "Breakfast Spots"
-      shortName: "Breakfast"
-      icon: {
-        prefix: "https://ss3.4sqi.net/img/categories_v2/food/breakfast_"
-        suffix: ".png"
-      }
-    }
-    {
-      id: "4bf58dd8d48988d16d941735"
-      name: "Café"
-      pluralName: "Cafés"
-      shortName: "Café"
-      icon: {
-        prefix: "https://ss3.4sqi.net/img/categories_v2/food/cafe_"
-        suffix: ".png"
-      }
-    }
-  ]
-// ...
-// this is just the first 5%. There's so much more.
-```
+Now if we click on the first post and use our `Next...` link, that should mostly work too.
 
-Forget "ugly" or "cumbersome", it might be nearly impossible to keep
-track of all that inside a single `to_json` call, and it would certainly
-be frustrating to try to go in and change any of it later. And let's
-face it. With all that data to track, we're extremely likely to mistype
-something and introduce bugs.
+I say mostly, because it's not updating the author name. That's something we added in to our serializer, but by default, `to_json` only serializes the main object, not any associations. How can we change that?
 
-![joey milk](http://i.giphy.com/3o6gaVLjbCBjJcKfjW.gif)
-
-Okay. So far, just like in an infomercial, any time we've said, "There's
-got to be a better way!" we've found one.
-
-![better way](http://i.giphy.com/xT0BKmy9rfrISFCiHK.gif)
-
-## ActiveModel::Serializer
-
-ActiveModel::Serializer, or AMS, provides a convention-based approach to
-serializing resources in a Rails-y way.
-
-What does that mean? At a basic level, it means that if we have a `Post` model,
-then we can also have a `PostSerializer` serializer, and by default, Rails will
-use our serializer if we simply call `render json: post` in a controller.
-
-How is that different than when we created our own serializer by
-hand and used it in the controller? Remember:
-
-```
-render json: @post.to_json(only: [:title, :description, :id],
-                          include: [author: { only: [:name]}])
-```
-
-We had to explicitly tell Rails what data to return whereas ActiveModel
-Serializers will take care of this for us.
-
-But second, and more importantly, AMS doesn't require us to do the
-tedious work of building out JSON strings by hand. We'll see it in
-action shortly.
-
-In Rails 5, the goal was to allow developers to create lean,
-efficient, API-only Rails applications. M and C without the V. With the
-popularity of mobile apps and robust front-end frameworks like React.js
-and Angular.js, there was a need to strip Rails down to just what is
-needed to serve as an API, and ActiveModel::Serializer, not being tied
-to the View layer, is how the Rails team chose to move forward.
-
-## Using AMS
-
-We have our blog application from the previous lesson. Let's refactor it
-to use AMS.
-
-First we need to add the gem.
-
-```ruby
-# Gemfile
-#...
-gem 'active_model_serializers'
-```
-
-Run `bundle install` to activate the gem. Now we need to generate an
-`ActiveModel::Serializer` for our `Post`. Thankfully, the gem provides a
-generator for that. Drop into your console and run:
-
-`rails g serializer post`
-
-**Note:** If you are using your old code, make sure to delete the
-existing `post_serializer.rb` from the `app/serializers` directory
-before running the generator.
-
-If we look at the generated `post_serializer.rb`, it should look
-something like this:
-
-```ruby
-class PostSerializer < ActiveModel::Serializer
-  attributes :id
-end
-```
-
-We want to get some more information out of it, so let's add a couple
-attributes.
-
-```ruby
-class PostSerializer < ActiveModel::Serializer
-  attributes :id, :title, :description
-end
-```
-
-To make use of our new serializer, we need to get rid of the `to_json`
-stuff in our controller:
+You can tell `to_json` what associated objects to include, using the `include` option.
 
 ```ruby
 # posts_controller.rb
- def show
-    @post = Post.find(params[:id])
-    render json: @post.to_json(only: [:title, :description, :id],
-                              include: [author: { only: [:name]}])
+# ...
+  def post_data
+    post = Post.find(params[:id])
+    render json: post.to_json(include: :author)
   end
 ```
 
-Remember that we said calling `render json: @post` would implicitly use
-the new ActiveModel::Serializer to render the post to JSON? Let's see it
-in action. Restart your Rails server and browse to `/posts/1` and
-look at the results. It should look like this:
+Now if we reload that post show page and click `Next`, the author should update as well.
+
+#### Only Render The Data We Need
+
+If we browse to `/posts/id/post_data`, we can see the raw JSON of our object. It should look something like this:
 
 ```javascript
 {
   id: 1,
   title: "A Blog Post By Stephen King",
-  description: "This is a blog post by Stephen King. It will probably be a movie soon."
+  description: "This is a blog post by Stephen King. It will probably be a movie soon.",
+  created_at: "2016-02-22T00:29:21.022Z",
+  updated_at: "2016-02-22T00:29:21.022Z",
+  author_id: 1,
+    author: {
+      id: 1,
+      name: "Stephen King",
+      hometown: null,
+      created_at: "2016-02-22T00:29:20.999Z",
+      updated_at: "2016-02-22T00:29:20.999Z"
+    }
 }
 ```
 
-Worked like a charm! Nothing we didn't want, and our controller is back
-to a clear, non-messy state.
+**Note:** This would be a great time to install [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc?hl=en) if you haven't already!
 
-Before moving on, test out this serializer. Navigate to `localhost:3000/posts/1`
-and see what happens when you change the attributes for your serializer. What
-data do you see if the only attribute is `:id`?
+It's great that `to_json` gives us all this, but we don't really need all of it.
 
-### Rendering An Author
+A good API endpoint should return *only* the data that is needed, nothing more. So how do we get rid of that stuff?
 
-What's missing that we had before? The author name. So how do we do
-that?
-
-Because AMS is modeled after the way Rails handles models and
-controllers, rather than build serialization of the author into the
-post, as we have in the past, we need to create a new
-`AuthorSerializer`.
-
-`rails g serializer author`
-
-And add the author name to the list of attributes:
+It turns out `to_json` gives us ways to exclude data as well, using the `only` option, similar to how we'd specify certain routes for a resource.
 
 ```ruby
-class AuthorSerializer < ActiveModel::Serializer
-  attributes :id, :name
-end
-```
-
-Now to test this out, let's modify our `authors_controller#show` action
-to handle a JSON request:
-
-```ruby
-class AuthorsController < ApplicationController
-  def show
-    @author = Author.find(params[:id])
-    render json: @author, status: 200
+# posts_controller.rb
+# ...
+  def post_data
+    post = Post.find(params[:id])
+    #render json: PostSerializer.serialize(post)
+    render json: post.to_json(only: [:title, :description, :id],
+                              include: [ author: { only: [:name]}])
   end
-end
 ```
 
-And load up `/authors/1`. We should see something that looks like
-this:
+We can use `only` both on the main object and the included objects.
 
-```javascript
-{
-  id: 1,
-  name: "Stephen King"
-}
-```
+**Top-tip:** Notice that we have to pass `author:` inside an array for `include` now that we are specifying additional options.
 
-But how do we add the author name to our post JSON?
-
-Again, we lean on those Rails conventions. If we add a `belongs_to :author`
-to our `PostSerializer`:
-
-```ruby
-class PostSerializer < ActiveModel::Serializer
-  attributes :id, :title, :description
-  belongs_to :author
-end
-```
-
-Reload `/posts/1`, and we will now see our author information.
+Reloading the `/posts/id/post_data` page now gives us something more like this:
 
 ```javascript
 {
@@ -287,92 +102,69 @@ Reload `/posts/1`, and we will now see our author information.
   title: "A Blog Post By Stephen King",
   description: "This is a blog post by Stephen King. It will probably be a movie soon.",
   author: {
-    id: 1,
     name: "Stephen King"
   }
 }
 ```
 
-And now if we reload our first post show page and click through our
-`Next` button we can see that everything works exactly the same as before!
+Which is exactly the data we need to get the job done.
 
-Now what if next we were building out our Author show page and wanted to
-render a list of an author's posts along with the author's information?
+### Responding To Requests With Different Formats
 
-Well, it's as simple as adding a `has_many :posts` to the
-`AuthorSerializer`!
+If we think about what we've been doing when we load `/posts/id/post_data`, we're really just requesting a `Post` resource, same as if we were on the Post `show` page. In fact, that's exactly what we're doing in AJAX on the Post `show` page, requesting the data for that page and replacing the values.
 
-```ruby
-class AuthorSerializer < ActiveModel::Serializer
-  attributes :id, :name
-  has_many :posts
-end
-```
+Given what we know about REST, and about DRY (don't repeat yourself), it seems like the `post_data` route and action are redundant. If we just want to request the post resource for `show`, we should be able to do that in one place.
 
-**Oh the power!!!**
+In the desktop application world, we identify formats by *file extension*, so we know that `file.txt` is a plain text file, and `file.gif` is an awesome animated gif file.
 
-![interstellar](http://i.giphy.com/pZGDZwmxOtEEo.gif)
+![reaganaut](http://i.giphy.com/MCKQEmHkUyGf6.gif)
 
-### Rendering With Explicit Serializers
+Rails provides us with a similar way to do this, [using `respond_to`](http://apidock.com/rails/ActionController/MimeResponds/InstanceMethods/respond_to).
 
-Let's suppose that when we display a Posts Author, we don't need all the
-information being rendered from the AuthorSerializer. Since our post JSON really
-just needs an author's name, we might want to do a simpler serialization of the
-author for those purposes.
-
-Let's make a new `PostAuthorSerializer`:
-
-`rails g serializer post_author`
-
-And let's add the bare minimum of what we need for the author to be
-embedded in a post:
+If we go into our `show` action and add a `respond_to` block, we can specify what to render depending on if the request is looking for HTML or JSON.
 
 ```ruby
-class PostAuthorSerializer < ActiveModel::Serializer
-  attributes :name
-end
+# posts_controller
+# ...
+  def show
+    @post = Post.find(params[:id])
+    respond_to do |format|
+      format.html { render :show }
+      format.json { render json: @post.to_json(only: [:title, :description, :id],
+                              include: [author: { only: [:name]}]) }
+    end
+  end
 ```
 
-But how do we get the `PostSerializer` to use this instead of the
-default? We have to _explicitly_ give it a serializer to use rather than
-relying on the convention:
+Now if we browse to `/posts/id`, we get the HTML page as expected. HTML is the default format for any request. We could also browse to `/posts/id.html`, and get the same thing.
 
-```ruby
-class PostSerializer < ActiveModel::Serializer
-  attributes :id, :title, :description
-  belongs_to :author, serializer: PostAuthorSerializer
-end
+But if we browse to `/posts/id.json`, we now get our serialized post in JSON form!
+
+Now let's update the code in our `show.html.erb` to use the `show` route.
+
+```erb
+# posts/show.html.erb
+# ...
+$(function () {
+  $(".js-next").on("click", function() {
+    var nextId = parseInt($(".js-next").attr("data-id")) + 1;
+    $.get("/posts/" + nextId + ".json", function(data) {
+      $(".authorName").text(data["author"]["name"]);
+      $(".postTitle").text(data["title"]);
+      $(".postBody").text(data["description"]);
+      // re-set the id to current on the link
+      $(".js-next").attr("data-id", data["id"]);
+    });
+  });
+});
 ```
 
-Now we're telling AMS to render `:author` with `PostAuthorSerializer`
-instead of the default.
-
-So if we reload `/authors/1` we should see the author with their
-posts, and if we reload `/posts/1` we should see our post with just
-the simple author information.
-
-In this way, AMS is a powerful way to compose an API with explicit,
-easy-to-maintain serializers, rather than try to keep track of what
-things you do and don't want to render at the controller or view level.
+Instead of doing a `$.get()` to `/posts/id/post_data`, we are now getting `/posts/id.json`. If we reload the page and click the `Next` button, everything still works and we don't have to change any of the code to extract the JSON values!
 
 ## Summary
 
-We've learned how to use ActiveModel::Serializer to easily generate
-serializers for our models that will be implicitly called if we call
-`render json:` on a model.
+We've seen how to use `to_json` to easily serialize an object, how to customize the serialized output, and how to modify our actions to respond with different formats.
 
-We've also seen how to compose more structured serializers by combining
-associated objects, and how to create and use explicit serializers for
-specific tasks.
+You're probably thinking about that `to_json` call up there and noticing how it went from very simple to a little complex for just a few fields, and worrying about what you'll have to do when you're serializing a *big* object model? Don't worry. We'll get there.
 
-Now let's all celebrate with a nice drink of milk!
-
-![joey milk](http://i.giphy.com/TsMnvSsfKzThu.gif)
-
-## Additional Resources
-
-[Getting Started with Active Model Serializer](https://github.com/rails-api/active_model_serializers/blob/0-10-stable/docs/general/getting_started.md)
-
-<p data-visibility='hidden'>View <a href='https://learn.co/lessons/using-active-model-serializer'>Using Active Model Serializer</a> on Learn.co and start learning to code for free.</p>
-
-<p class='util--hide'>View <a href='https://learn.co/lessons/using-active-model-serializer'>Using Active Model Serializer</a> on Learn.co and start learning to code for free.</p>
+<p data-visibility='hidden'>View <a href='https://learn.co/lessons/using-to-json-ruby'>Using to_json</a> on Learn.co and start learning to code for free.</p>
