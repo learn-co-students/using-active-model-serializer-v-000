@@ -1,0 +1,7 @@
+<h3>Post Form</h3>
+
+<%= form_for @post do |f| %>
+  <%= f.text_field :title, id: 'title' %>
+  <%= f.text_area :description, id: 'description' %>
+  <%= f.submit 'Submit Post'%>
+<% end %>
