@@ -12,7 +12,6 @@ class PostsController < ApplicationController
       format.html {render :show}
       format.json {render json: @post}
     end
-
   end
 
   def new
@@ -26,6 +25,7 @@ class PostsController < ApplicationController
   end
 
   def edit
+    @post = Post.find(params[:id])
   end
 
   def update
