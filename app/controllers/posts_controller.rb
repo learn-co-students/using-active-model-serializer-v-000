@@ -3,16 +3,19 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.all
-    render json: @posts, status: 200
+    respond_to do |f|
+      f.json {render json: @posts, status: 200}
+      f.html {render :index}
+    end
   end
 
   def show
     @post = Post.find(params[:id])
-      #BEFORE using a serializer:
-      render json: @post.to_json(only: [:title, :description, :id],
-                                include: [author: { only: [:name]}])
-       # AFTER USING OUR SERIALIZER
-      # render json: @post, status: 200
+    respond_to do |f|
+      f.json {render json: @post, status: 200}
+      f.html {render :show}
+    end
+
   end
 
   def new
@@ -33,13 +36,19 @@ class PostsController < ApplicationController
     render json: @post, status: 202
   end
 
+  def post_data
+  post = Post.find(params[:id])
+  #render json: PostSerializer.serialize(post)
+  render json: post.to_json(only: [:title, :description, :id],
+                            include: [author: { only: [:name]}])
+end
+
 private
-  # Use callbacks to share common setup or constraints between actions.
+
   def set_post
     @post = Post.find(params[:id])
   end
 
-  # Never trust parameters from the scary internet, only allow the white list through.
   def post_params
     params.require(:post).permit(:title, :description)
   end
