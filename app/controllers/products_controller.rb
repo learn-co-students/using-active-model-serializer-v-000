@@ -1,0 +1,34 @@
+class ProductsController < ApplicationController
+  def index
+    @products = Product.all
+    respond_to do |format|
+      format.html { :index}
+      format.json { render json: @products, status: 200}
+    end
+  end
+   def inventory
+     product = Product.find(params[:id])
+     render plain: product.inventory > 0 ? true : false
+   end
+
+   def description
+     product = Product.find(params[:id])
+     render plain: product.description
+   end
+
+   def new
+     @product = Product.new
+   end
+
+   def create
+     Product.create(product_params)
+     redirect_to products_path
+   end
+
+  def show
+    @product = Product.find(params[:id])
+    respond_to do |format|
+      format.html { :show }
+      format.json { render json: @product, status: 200}
+    end
+  end
