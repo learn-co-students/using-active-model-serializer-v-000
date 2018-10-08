@@ -5,7 +5,7 @@ describe 'navigate' do
     @post = Post.create(title: "My Post", description: "My post desc")
   end
 
-  it 'shows the title on the show page in a h1 tag' do
+  Xit 'shows the title on the show page in a h1 tag' do
     visit post_path(@post)
     expect(page).to have_css("h1", text: "My Post")
   end
@@ -22,7 +22,7 @@ describe 'navigate' do
 end
 
 describe 'form' do
-  it 'shows a new form that submits content and redirects and prints out params' do
+  Xit 'shows a new form that submits content and redirects and prints out params' do
     visit new_post_path
 
     fill_in 'title', with: "My post title"
@@ -33,7 +33,7 @@ describe 'form' do
     expect(page).to have_content("My post title")
   end
 
-  it 'shows a new form that submits content and redirects and prints out params' do
+  Xit 'shows a new form that submits content and redirects and prints out params' do
     @post = Post.create(title: "My Post", description: "My post desc")
 
     visit edit_post_path(@post)
