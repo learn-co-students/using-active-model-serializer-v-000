@@ -18,7 +18,7 @@ class PostsController < ApplicationController
       # #BEFORE using a serializer:
       # render json: @post.to_json(only: [:title, :description, :id],
       #                           include: [author: { only: [:name]}])
-    
+
   def new
     @post = Post.new
   end
@@ -39,11 +39,6 @@ class PostsController < ApplicationController
     @post.update(post_params)
     render json: @post, status: 202
   end
-
-  # def data
-  #   @post = Post.find(params[:id])
-  #   render json: PostSerializer.serialize(@post)
-  # end
 
 
 private
