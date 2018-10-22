@@ -8,21 +8,25 @@ class PostsController < ApplicationController
 
   def show
     @post = Post.find(params[:id])
+    render json: @post, status: 200
+  end
       # #BEFORE using a serializer:
       # render json: @post.to_json(only: [:title, :description, :id],
       #                           include: [author: { only: [:name]}])
        # AFTER USING OUR SERIALIZER
-      render json: @post, status: 200
-  end
+
 
   def new
     @post = Post.new
   end
 
   def create
+    @author = Author.first_or_create(name: params[:post][:author])
     @post = Post.create(post_params)
-    @post.save
-    render json: @post, status: 201
+    if @post.save
+      @post.author = @author
+      render json: @post, status: 201
+    end
   end
 
   def edit
@@ -32,6 +36,12 @@ class PostsController < ApplicationController
     @post.update(post_params)
     render json: @post, status: 202
   end
+
+  def data
+    @post = Post.find(params[:id])
+    render json: PostSerializer.serialize(@post)
+  end
+
 
 private
   # Use callbacks to share common setup or constraints between actions.
