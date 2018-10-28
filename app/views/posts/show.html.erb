@@ -1,0 +1,6 @@
+<h1>My Post</h1>
+<strong><%= @post.title %></strong>
+<p><%= @post.description %></p>
+<% if @post.author %>
+  <p><%= @post.author.name %></p>
+<% end %>
