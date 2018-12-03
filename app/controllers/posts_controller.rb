@@ -1,18 +1,21 @@
+require 'pry'
 class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update]
 
   def index
     @posts = Post.all
-    render json: @posts, status: 200
   end
 
   def show
     @post = Post.find(params[:id])
       #BEFORE using a serializer:
-      render json: @post.to_json(only: [:title, :description, :id],
-                                include: [author: { only: [:name]}])
+      #render json: @post.to_json(only: [:title, :description, :id],
+      #                          include: [author: { only: [:name]}])
        # AFTER USING OUR SERIALIZER
-      # render json: @post, status: 200
+    respond_to do |format| 
+      format.html { render :show}  
+      format.json { render json: @post }
+    end
   end
 
   def new
@@ -22,15 +25,17 @@ class PostsController < ApplicationController
   def create
     @post = Post.create(post_params)
     @post.save
-    render json: @post, status: 201
+    redirect_to post_path(@post)
+
   end
 
   def edit
+    
   end
 
   def update
     @post.update(post_params)
-    render json: @post, status: 202
+    redirect_to post_path(@post)
   end
 
 private
@@ -44,3 +49,4 @@ private
     params.require(:post).permit(:title, :description)
   end
 end
+  
