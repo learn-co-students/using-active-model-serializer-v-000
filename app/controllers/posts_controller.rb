@@ -9,9 +9,11 @@ class PostsController < ApplicationController
   def show
     @post = Post.find(params[:id])
       #BEFORE using a serializer:
-      render json: @post.to_json(only: [:title, :description, :id],
-                                include: [author: { only: [:name]}])
-       # AFTER USING OUR SERIALIZER
+      respond_to do |format|
+        format.html {render :show}
+        format.json {render json: @post, status:200}
+      end
+      # AFTER USING OUR SERIALIZER
       # render json: @post, status: 200
   end
 
@@ -22,7 +24,8 @@ class PostsController < ApplicationController
   def create
     @post = Post.create(post_params)
     @post.save
-    render json: @post, status: 201
+    render :show
+
   end
 
   def edit
@@ -30,7 +33,7 @@ class PostsController < ApplicationController
 
   def update
     @post.update(post_params)
-    render json: @post, status: 202
+    render :show
   end
 
 private
