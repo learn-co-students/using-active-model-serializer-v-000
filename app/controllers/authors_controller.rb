@@ -3,4 +3,5 @@ class AuthorsController < ApplicationController
     @author = Author.find(params[:id])
     render json: @author, status: 200
   end
+
 end

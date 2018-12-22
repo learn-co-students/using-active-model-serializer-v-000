@@ -7,12 +7,14 @@ class PostsController < ApplicationController
   end
 
   def show
+
     @post = Post.find(params[:id])
+    respond_to do |format|
+      format.html { render :show }
       #BEFORE using a serializer:
-      render json: @post.to_json(only: [:title, :description, :id],
-                                include: [author: { only: [:name]}])
-       # AFTER USING OUR SERIALIZER
+      format.json {render json: @post}# AFTER USING OUR SERIALIZER
       # render json: @post, status: 200
+    end
   end
 
   def new
