@@ -3,16 +3,18 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.all
-    render json: @posts, status: 200
+    respond_to do |f|
+      f.json {render json: @posts, status: 200}
+      f.html {render :index}
+    end
   end
 
   def show
     @post = Post.find(params[:id])
-      #BEFORE using a serializer:
-      render json: @post.to_json(only: [:title, :description, :id],
-                                include: [author: { only: [:name]}])
-       # AFTER USING OUR SERIALIZER
-      # render json: @post, status: 200
+    respond_to do |f|
+      f.json {render json: @post, status: 200}
+      f.html {render :show}
+    end
   end
 
   def new
