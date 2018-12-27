@@ -1,0 +1,7 @@
+<%= form_for @author do |f| %>
+  <%= f.label :name %>
+  <%= f.text_field :name, id:"name" %><br />
+  <%= f.label :hometown %>
+  <%= f.text_area :hometown, id:"hometown" %><br />
+  <%= f.submit "Submit Author" %>
+<% end %>
