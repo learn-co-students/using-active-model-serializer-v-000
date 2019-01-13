@@ -1,5 +1,17 @@
 # Using ActiveModel::Serializer
 
+##For easier access to data with json using AR Serializer
+#Files Touched
+1.) Gemfile add- gem 'active_model_serializers'
+1.1) run rails g serializer post 
+2.) post_serializer.rb  - add desired attributes
+2.1)run rails g serializer post
+3.) add name to author_serializer.rb
+
+
+## To make a bespoke serializer that only returns the desired data from more than one model -post_author serializer
+
+
 ## Objectives
 
 1.  Explain what ActiveModel::Serializer does.
