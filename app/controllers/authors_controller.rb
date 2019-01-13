@@ -1,6 +1,9 @@
 class AuthorsController < ApplicationController
   def show
     @author = Author.find(params[:id])
-    render json: @author, status: 200
+    respond_to do |f|
+      f.html { render :show }
+      f.json { render json: @author }
+    end
   end
 end
