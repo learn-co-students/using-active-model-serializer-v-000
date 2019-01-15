@@ -1,4 +1,4 @@
-# Using ActiveModel::Serializer
+gem list | grep bundler# Using ActiveModel::Serializer
 
 ## Objectives
 
