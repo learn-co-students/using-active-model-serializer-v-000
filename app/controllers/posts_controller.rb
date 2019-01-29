@@ -7,9 +7,8 @@ class PostsController < ApplicationController
   end
 
   def show
-     @post = Post.find(params[:id])
-     render json: @post.to_json(only: [:title, :description, :id],
-                               include: [author: { only: [:name]}])
+    @post = set_post
+    render json: @post, status: 200
    end
 
   def new
