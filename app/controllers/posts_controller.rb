@@ -7,10 +7,11 @@ class PostsController < ApplicationController
   end
 
   def show
-    def show
-      @post = Post.find(params[:id])
-      render json: @post.to_json(only: [:title, :description, :id], include: [author: { only: [:name]}])
-    end
+    @post = Post.find(params[:id])
+    respond_to do |format|
+      format.json {render json: @post.to_json(only: [:title, :description, :id], include: [author: { only: [:name, :id]}])}
+      format.html { render :show }
+    end  
   end
 
   def new
