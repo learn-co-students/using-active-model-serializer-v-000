@@ -1,4 +1,4 @@
-# Using ActiveModel::Serializer
+r# Using ActiveModel::Serializer
 
 ## Objectives
 
