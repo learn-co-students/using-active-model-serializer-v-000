@@ -1,0 +1,21 @@
+
+<h1><div class="title"><%= @post.title %></div></h1>
+<a href="#" class="js-next" data-id="<%=@post.id%>">Next...</a>
+<p class="description"><%= @post.description %></p>
+
+
+<script type="text/javascript" charset="utf-8">
+$(function () {
+  $(".js-next").on("click", function(event) {
+    event.preventDefault()
+    var nextId = parseInt($(".js-next").attr("data-id")) + 1;
+    $.get("/posts/" + nextId + ".json", function(data) {
+      $(".title").text(data[title]);
+      $(".cescription").text(data["description"]);
+
+      // re-set the id to current on the link
+      $(".js-next").attr("data-id", data["id"]);
+    });
+  });
+});
+</script>
