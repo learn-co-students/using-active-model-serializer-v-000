@@ -1,6 +1,7 @@
 class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update]
 
+
   def index
     @posts = Post.all
     render json: @posts, status: 200
@@ -9,10 +10,18 @@ class PostsController < ApplicationController
   def show
     @post = Post.find(params[:id])
       #BEFORE using a serializer:
-      render json: @post.to_json(only: [:title, :description, :id],
+      render json: @post, status:200 
+      .to_json(only: [:title, :description, :id],
                                 include: [author: { only: [:name]}])
        # AFTER USING OUR SERIALIZER
       # render json: @post, status: 200
+
+
+    # @post = Post.find(params[:id]) 
+    #   # respond_to do |format|     
+    #   #    format.html {render :show}
+    #   #    format.json {render json: @post, status: 200}
+    #   # end 
   end
 
   def new
@@ -43,4 +52,5 @@ private
   def post_params
     params.require(:post).permit(:title, :description)
   end
+
 end
