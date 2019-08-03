@@ -36,7 +36,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.0'
-  gem 'capybara'
+  gem 'capybara', '3.15'
   gem 'database_cleaner'
   gem 'annotate'
 end
@@ -46,5 +46,5 @@ group :development do
   # gem 'web-console', '~> 2.0'
 
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
+  #gem 'spring'
 end
