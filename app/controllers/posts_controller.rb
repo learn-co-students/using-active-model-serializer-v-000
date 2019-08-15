@@ -6,6 +6,8 @@ class PostsController < ApplicationController
     render json: @posts, status: 200
   end
 
+???
+
   def show
     @post = Post.find(params[:id])
       #BEFORE using a serializer:
